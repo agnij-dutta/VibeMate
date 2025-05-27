@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320">
+  <rect width="320" height="320" fill="#f3e8ff"/>
+  <circle cx="160" cy="160" r="120" fill="#a855f7" opacity="0.1"/>
+  <circle cx="160" cy="160" r="100" fill="#a855f7" opacity="0.05"/>
+  <circle cx="160" cy="160" r="80" fill="#a855f7" opacity="0.05"/>
+  
+  <!-- Hearts connecting -->
+  <path d="M130 130 C 110 110, 80 120, 80 150 C 80 180, 120 200, 130 180" stroke="#ec4899" stroke-width="4" fill="none"/>
+  <path d="M190 130 C 210 110, 240 120, 240 150 C 240 180, 200 200, 190 180" stroke="#a855f7" stroke-width="4" fill="none"/>
+  
+  <!-- Connection line -->
+  <path d="M130 180 Q 160 210, 190 180" stroke="#a855f7" stroke-width="3" fill="none" stroke-dasharray="5,5"/>
+  
+  <!-- Profile icons -->
+  <circle cx="130" cy="130" r="25" fill="#ec4899" opacity="0.7"/>
+  <circle cx="190" cy="130" r="25" fill="#a855f7" opacity="0.7"/>
+  
+  <!-- Ethereum symbol -->
+  <path d="M160 60 L 180 90 L 160 100 L 140 90 Z" fill="#a855f7"/>
+  <path d="M160 105 L 180 95 L 160 125 L 140 95 Z" fill="#a855f7"/>
+  
+  <!-- Logo text -->
+  <text x="160" y="230" font-family="Arial" font-size="24" font-weight="bold" text-anchor="middle" fill="#a855f7">VibeMate</text>
+  <text x="160" y="255" font-family="Arial" font-size="12" text-anchor="middle" fill="#a855f7">Find Your Perfect Match</text>
+</svg> 

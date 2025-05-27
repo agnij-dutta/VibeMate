@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAccount, useReadContract, useWriteContract } from 'wagmi';
+import { useAccount, useContractRead, useContractWrite, useWaitForTransaction } from 'wagmi';
 import { parseEther } from 'viem';
 import { CONTRACT_ADDRESS } from '@/lib/wagmi';
 import vibemateAbi from '@/abis/vibemate.json';
@@ -10,36 +10,59 @@ import { SexyProfile, VibeType } from '@/types';
 export function useVibemateContract() {
   const { address } = useAccount();
   const [loading, setLoading] = useState(false);
-  const { writeContractAsync } = useWriteContract();
+  const [pendingTx, setPendingTx] = useState<`0x${string}` | undefined>(undefined);
+  
+  const { writeAsync: mintAsync } = useContractWrite({
+    address: CONTRACT_ADDRESS as `0x${string}`,
+    abi: vibemateAbi,
+    functionName: 'mintSexyProfile',
+  });
+
+  const { writeAsync: findMatchAsync } = useContractWrite({
+    address: CONTRACT_ADDRESS as `0x${string}`,
+    abi: vibemateAbi,
+    functionName: 'findMatch',
+  });
+
+  const { writeAsync: updateMessageAsync } = useContractWrite({
+    address: CONTRACT_ADDRESS as `0x${string}`,
+    abi: vibemateAbi,
+    functionName: 'updateVibeMessage',
+  });
 
   // Get user's profile
-  const { data: profiles, refetch: refetchProfiles } = useReadContract({
+  const { data: profiles, refetch: refetchProfiles } = useContractRead({
     address: CONTRACT_ADDRESS as `0x${string}`,
     abi: vibemateAbi,
     functionName: 'balanceOf',
     args: [address as `0x${string}`],
-    query: {
-      enabled: !!address,
-    },
+    enabled: !!address,
   });
 
   // Get total supply
-  const { data: totalSupply } = useReadContract({
+  const { data: totalSupply } = useContractRead({
     address: CONTRACT_ADDRESS as `0x${string}`,
     abi: vibemateAbi,
     functionName: 'totalSupply',
   });
+
+  // Wait for transaction
+  const { isLoading: isWaitingForTx } = useWaitForTransaction({
+    hash: pendingTx,
+    onSuccess: () => {
+      setPendingTx(undefined);
+      refetchProfiles();
+    },
+  });
   
   // Get a specific profile data
   const useProfileData = (tokenId: number) => {
-    return useReadContract({
+    return useContractRead({
       address: CONTRACT_ADDRESS as `0x${string}`,
       abi: vibemateAbi,
       functionName: 'getProfile',
       args: [BigInt(tokenId)],
-      query: {
-        enabled: tokenId > 0,
-      },
+      enabled: tokenId > 0,
     });
   };
 
@@ -49,67 +72,63 @@ export function useVibemateContract() {
     secondaryVibe: VibeType,
     customMessage: string
   ) => {
-    if (!address) return;
-    setLoading(true);
     try {
-      await writeContractAsync({
-        address: CONTRACT_ADDRESS as `0x${string}`,
-        abi: vibemateAbi,
-        functionName: 'mintSexyProfile',
+      setLoading(true);
+      const { hash } = await mintAsync({
         args: [primaryVibe, secondaryVibe, customMessage],
-        value: parseEther('0.01'),
+        value: parseEther('0.01'),  // 0.01 CORE fee
       });
-      await refetchProfiles();
+      setPendingTx(hash);
+      return hash;
     } catch (error) {
-      console.error('Error minting profile:', error);
+      console.error('Failed to mint profile:', error);
+      throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  // Find a match
-  const findMatch = async (myTokenId: number, theirTokenId: number) => {
-    if (!address) return;
-    setLoading(true);
+  // Find a match for your profile
+  const findMatch = async (tokenId: number) => {
     try {
-      await writeContractAsync({
-        address: CONTRACT_ADDRESS as `0x${string}`,
-        abi: vibemateAbi,
-        functionName: 'findMatch',
-        args: [BigInt(myTokenId), BigInt(theirTokenId)],
+      setLoading(true);
+      const { hash } = await findMatchAsync({
+        args: [BigInt(tokenId)],
       });
+      setPendingTx(hash);
+      return hash;
     } catch (error) {
-      console.error('Error finding match:', error);
+      console.error('Failed to find match:', error);
+      throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  // Update profile message
-  const updateMessage = async (tokenId: number, newMessage: string) => {
-    if (!address) return;
-    setLoading(true);
+  // Update your vibe message
+  const updateVibeMessage = async (tokenId: number, newMessage: string) => {
     try {
-      await writeContractAsync({
-        address: CONTRACT_ADDRESS as `0x${string}`,
-        abi: vibemateAbi,
-        functionName: 'updateVibeMessage',
+      setLoading(true);
+      const { hash } = await updateMessageAsync({
         args: [BigInt(tokenId), newMessage],
       });
+      setPendingTx(hash);
+      return hash;
     } catch (error) {
-      console.error('Error updating message:', error);
+      console.error('Failed to update message:', error);
+      throw error;
     } finally {
       setLoading(false);
     }
   };
 
   return {
-    loading,
-    totalSupply,
+    loading: loading || isWaitingForTx,
     profiles,
+    totalSupply,
     useProfileData,
     mintProfile,
     findMatch,
-    updateMessage,
+    updateVibeMessage,
   };
-} 
+}

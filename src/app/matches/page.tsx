@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccount, useReadContract } from 'wagmi';
+import { useAccount, useContractRead } from 'wagmi';
 import Navbar from '@/components/Navbar';
 import { useVibemateContract } from '@/hooks/useVibemateContract';
 import { CONTRACT_ADDRESS } from '@/lib/wagmi';
@@ -24,36 +24,30 @@ export default function MatchesPage() {
   const [loading, setLoading] = useState(true);
 
   // Get user's tokens
-  const { data: userTokens } = useReadContract({
+  const { data: userTokens } = useContractRead({
     address: CONTRACT_ADDRESS as `0x${string}`,
     abi: vibemateAbi,
     functionName: 'balanceOf',
     args: [address as `0x${string}`],
-    query: {
-      enabled: !!address,
-    },
+    enabled: !!address,
   });
 
   // Get user's first token ID
-  const { data: firstTokenId } = useReadContract({
+  const { data: firstTokenId } = useContractRead({
     address: CONTRACT_ADDRESS as `0x${string}`,
     abi: vibemateAbi,
     functionName: 'userTokens',
     args: [address as `0x${string}`, BigInt(0)],
-    query: {
-      enabled: !!address && !!userTokens && Number(userTokens) > 0,
-    },
+    enabled: !!address && !!userTokens && Number(userTokens) > 0,
   });
 
   // Get user's matches
-  const { data: matchIds } = useReadContract({
+  const { data: matchIds } = useContractRead({
     address: CONTRACT_ADDRESS as `0x${string}`,
     abi: vibemateAbi,
     functionName: 'getMyMatches',
-    args: [userProfileId ? BigInt(userProfileId) : BigInt(0)],
-    query: {
-      enabled: !!userProfileId,
-    },
+    args: [firstTokenId ? BigInt(firstTokenId.toString()) : BigInt(0)],
+    enabled: !!firstTokenId,
   });
 
   useEffect(() => {
@@ -216,4 +210,4 @@ export default function MatchesPage() {
       </div>
     </div>
   );
-} 
+}

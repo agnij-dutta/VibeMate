@@ -1,14 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createPublicClient, http } from 'viem';
-import { sepolia } from 'viem/chains';
 import vibemateAbi from '@/abis/vibemate.json';
-import { CONTRACT_ADDRESS } from '@/lib/wagmi';
+import { publicClient, CONTRACT_ADDRESS } from '@/lib/wagmi/server';
 
-// Create a public client
-const client = createPublicClient({
-  chain: sepolia,
-  transport: http(),
-});
+// Helper function to convert BigInt values to strings recursively
+function serializeProfile(value: any): any {
+  if (typeof value === 'bigint') {
+    return value.toString();
+  }
+  
+  if (Array.isArray(value)) {
+    return value.map(item => serializeProfile(item));
+  }
+  
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, val]) => [
+        key,
+        serializeProfile(val)
+      ])
+    );
+  }
+  
+  return value;
+}
 
 export async function GET(
   request: NextRequest,
@@ -22,7 +36,7 @@ export async function GET(
     }
 
     // Get profile data from contract
-    const profile = await client.readContract({
+    const profile = await publicClient.readContract({
       address: CONTRACT_ADDRESS as `0x${string}`,
       abi: vibemateAbi,
       functionName: 'getProfile',
@@ -30,16 +44,22 @@ export async function GET(
     });
 
     // Get token owner
-    const owner = await client.readContract({
+    const owner = await publicClient.readContract({
       address: CONTRACT_ADDRESS as `0x${string}`,
       abi: vibemateAbi,
       functionName: 'ownerOf',
       args: [BigInt(tokenId)],
     });
 
-    return NextResponse.json({ profile, owner });
+    // Serialize all BigInt values recursively
+    return NextResponse.json({
+      profile: serializeProfile(profile),
+      owner: serializeProfile(owner),
+      tokenId: tokenId.toString()
+    });
+
   } catch (error) {
     console.error('Error fetching profile:', error);
     return NextResponse.json({ error: 'Failed to fetch profile' }, { status: 500 });
   }
-} 
+}

@@ -1,7 +1,7 @@
 'use client';
 
+import React, { useState } from 'react';
 import { useAccount, useConnect, useDisconnect, useChainId, useSwitchNetwork, useNetwork } from 'wagmi';
-import { useState } from 'react';
 import { coreTestnet } from '@/lib/wagmi';
 
 export default function ConnectButton() {
@@ -12,12 +12,22 @@ export default function ConnectButton() {
   const { switchNetwork } = useSwitchNetwork();
   const { chain } = useNetwork();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isCorrectChain = chainId === coreTestnet.id;
 
   const formatAddress = (addr: string) => {
     return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
   };
+
+  // Don't render anything until mounted to prevent hydration errors
+  if (!mounted) {
+    return <button className="px-4 py-2 rounded-full text-white bg-purple-600">Loading...</button>;
+  }
 
   if (isConnected) {
     return (

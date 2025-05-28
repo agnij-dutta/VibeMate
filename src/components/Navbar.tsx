@@ -1,11 +1,18 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import ConnectButton from './ConnectButton';
 import { useAccount } from 'wagmi';
 
 export default function Navbar() {
   const { isConnected } = useAccount();
+  // Mounted state to handle client-side rendering only
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <nav className="bg-white shadow-md py-4 px-6">
@@ -24,7 +31,7 @@ export default function Navbar() {
           <Link href="/browse" className="text-gray-600 hover:text-purple-600 transition-colors">
             Browse
           </Link>
-          {isConnected && (
+          {mounted && isConnected && (
             <>
               <Link href="/profile" className="text-gray-600 hover:text-purple-600 transition-colors">
                 My Profile
@@ -40,4 +47,4 @@ export default function Navbar() {
       </div>
     </nav>
   );
-} 
+}

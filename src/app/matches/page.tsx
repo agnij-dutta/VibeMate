@@ -9,11 +9,13 @@ import vibemateAbi from '@/abis/vibemate.json';
 import { Match, SexyProfile } from '@/types';
 import Link from 'next/link';
 import ProfileCard from '@/components/ProfileCard';
+import AuthCheck from '@/components/AuthCheck';
 import { formatDistanceToNow } from 'date-fns';
 
 interface MatchWithProfile extends Match {
   profile: SexyProfile;
   owner: string;
+  tokenId: number;  // Add tokenId property
 }
 
 export default function MatchesPage() {
@@ -96,7 +98,10 @@ export default function MatchesPage() {
         }
       }
       
-      setMatches(fetchedMatches);
+      setMatches(fetchedMatches.map(match => ({
+        ...match,
+        tokenId: match.token2, // use token2 as the other person's token ID
+      })));
       setLoading(false);
     };
     
@@ -140,74 +145,43 @@ export default function MatchesPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="flex-1 bg-gray-50 py-10">
-        <div className="max-w-6xl mx-auto px-6">
-          <h1 className="text-3xl font-bold mb-2">My Matches</h1>
-          <p className="text-gray-600 mb-8">View all your successful matches</p>
-
-          {loading ? (
-            <div className="flex justify-center items-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
-            </div>
-          ) : matches.length === 0 ? (
-            <div className="bg-white p-6 rounded-lg shadow-md text-center">
-              <h2 className="text-xl font-bold mb-2">No Matches Found</h2>
-              <p className="text-gray-600 mb-4">Browse profiles to find your perfect match!</p>
-              <Link 
-                href="/browse" 
-                className="px-6 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
-              >
-                Browse Profiles
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-8">
-              {matches.map((match, index) => (
-                <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden">
-                  <div className="p-4 bg-purple-600 text-white">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-xl font-bold">Match #{match.token1.toString()}-{match.token2.toString()}</h3>
-                      <div className="flex items-center">
-                        <span className="text-3xl mr-2">
-                          {match.compatibilityScore >= 90 ? '❤️' : 
-                           match.compatibilityScore >= 80 ? '💕' : 
-                           match.compatibilityScore >= 70 ? '😍' : '🙂'}
-                        </span>
-                        <span className="text-xl font-bold">{match.compatibilityScore}% Compatible</span>
-                      </div>
-                    </div>
-                    <p className="text-purple-100 text-sm">
-                      Matched {formatDistanceToNow(new Date(Number(match.timestamp) * 1000), { addSuffix: true })}
-                    </p>
+      <AuthCheck hasProfile={!!userProfileId}>
+        <div className="flex-1 bg-gray-50 py-10">
+          <div className="max-w-7xl mx-auto px-6">
+            <h1 className="text-3xl font-bold mb-6">My Matches</h1>
+            
+            {loading ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
+              </div>
+            ) : matches.length === 0 ? (
+              <div className="bg-white p-6 rounded-lg shadow-md text-center">
+                <h2 className="text-xl font-bold mb-2">No Matches Found</h2>
+                <p className="text-gray-600 mb-4">Start browsing profiles to find your perfect match!</p>
+                <Link 
+                  href="/browse" 
+                  className="inline-block bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 transition-colors"
+                >
+                  Browse Profiles
+                </Link>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {matches.map((match) => (
+                  <div key={match.tokenId} className="relative">
+                    <ProfileCard 
+                      profile={match.profile}
+                      tokenId={match.tokenId}
+                      owner={match.owner}
+                      showMatchButton={false}
+                    />
                   </div>
-                  <div className="p-6">
-                    <div className="mb-6">
-                      <h4 className="text-lg font-medium mb-2">Your Match</h4>
-                      <ProfileCard 
-                        profile={match.profile}
-                        tokenId={Number(match.token1) === userProfileId ? Number(match.token2) : Number(match.token1)}
-                        owner={match.owner}
-                      />
-                    </div>
-                    
-                    {match.rewardPool > 0 && (
-                      <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
-                        <div className="flex items-center">
-                          <span className="text-2xl mr-2">💰</span>
-                          <div>
-                            <h4 className="font-bold text-green-800">Reward Earned</h4>
-                            <p className="text-green-700">{(Number(match.rewardPool) / 2 / 1e18).toFixed(4)} ETH from this match</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </AuthCheck>
     </div>
   );
 }

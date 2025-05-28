@@ -8,6 +8,7 @@ import { useVibemateContract } from '@/hooks/useVibemateContract';
 import { CONTRACT_ADDRESS } from '@/lib/wagmi';
 import vibemateAbi from '@/abis/vibemate.json';
 import { SexyProfile } from '@/types';
+import AuthCheck from '@/components/AuthCheck';
 import Link from 'next/link';
 
 export default function BrowsePage() {
@@ -97,79 +98,46 @@ export default function BrowsePage() {
     }
   };
 
-  if (!isConnected) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-          <h1 className="text-3xl font-bold mb-4">Connect Wallet to Continue</h1>
-          <p className="text-gray-600 mb-8 max-w-md">
-            Please connect your wallet to browse profiles and find matches.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!userProfileId) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-          <h1 className="text-3xl font-bold mb-4">Create a Profile First</h1>
-          <p className="text-gray-600 mb-8 max-w-md">
-            You need to create a profile before you can browse and match with others.
-          </p>
-          <Link 
-            href="/profile" 
-            className="px-6 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
-          >
-            Create Profile
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="flex-1 bg-gray-50 py-10">
-        <div className="max-w-6xl mx-auto px-6">
-          <h1 className="text-3xl font-bold mb-2">Browse Profiles</h1>
-          <p className="text-gray-600 mb-8">Find your perfect match from the available profiles</p>
-
-          {loading ? (
-            <div className="flex justify-center items-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
-            </div>
-          ) : profiles.length === 0 ? (
-            <div className="bg-white p-6 rounded-lg shadow-md text-center">
-              <h2 className="text-xl font-bold mb-2">No Profiles Found</h2>
-              <p className="text-gray-600 mb-4">Be the first to create a profile and start the community!</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {profiles.map((profile) => (
-                <div key={profile.id} className="relative">
-                  {matchLoading === profile.id && (
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-lg z-10">
-                      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
-                    </div>
-                  )}
-                  <ProfileCard 
-                    profile={profile.profile}
-                    tokenId={profile.id}
-                    owner={profile.owner}
-                    onMatchClick={() => handleMatchClick(profile.id)}
-                    showMatchButton={profile.owner.toLowerCase() !== address?.toLowerCase()}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+      <AuthCheck hasProfile={!!userProfileId}>
+        <div className="flex-1 bg-gray-50 py-10">
+          <div className="max-w-7xl mx-auto px-6">
+            <h1 className="text-3xl font-bold mb-6">Browse Profiles</h1>
+            
+            {loading ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
+              </div>
+            ) : profiles.length === 0 ? (
+              <div className="bg-white p-6 rounded-lg shadow-md text-center">
+                <h2 className="text-xl font-bold mb-2">No Profiles Found</h2>
+                <p className="text-gray-600 mb-4">Be the first to create a profile and start the community!</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {profiles.map((profile) => (
+                  <div key={profile.id} className="relative">
+                    {matchLoading === profile.id && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-lg z-10">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+                      </div>
+                    )}
+                    <ProfileCard 
+                      profile={profile.profile}
+                      tokenId={profile.id}
+                      owner={profile.owner}
+                      onMatchClick={() => handleMatchClick(profile.id)}
+                      showMatchButton={true}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </AuthCheck>
     </div>
   );
 }

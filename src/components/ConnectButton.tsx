@@ -16,6 +16,13 @@ export default function ConnectButton() {
 
   React.useEffect(() => {
     setMounted(true);
+    // Temporary: Clear any cached wallet connections
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('wagmi.cache');
+      localStorage.removeItem('wagmi.connected');
+      localStorage.removeItem('wagmi.wallet');
+      localStorage.removeItem('wagmi.store');
+    }
   }, []);
 
   const isCorrectChain = chainId === coreTestnet.id;

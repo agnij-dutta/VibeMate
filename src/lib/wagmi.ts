@@ -48,13 +48,12 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
 const wallectConnectProjectId = projectId as string
 
 export const config = createConfig({
-  autoConnect: true,
   connectors: [
     new InjectedConnector({
       chains,
       options: {
         name: 'Injected',
-        shimDisconnect: true,
+        shimDisconnect: false,
       },
     }),
     new MetaMaskConnector({ chains }),

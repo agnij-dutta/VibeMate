@@ -20,13 +20,12 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
 
 // Create wagmi config for client-side
 export const config = createConfig({
-  autoConnect: true,
   connectors: [
     new InjectedConnector({
       chains,
       options: {
         name: 'Injected',
-        shimDisconnect: true,
+        shimDisconnect: false,
       },
     }),
     new MetaMaskConnector({ chains }),

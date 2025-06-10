@@ -1,14 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createPublicClient, http } from 'viem';
-import { sepolia } from 'viem/chains';
 import vibemateAbi from '@/abis/vibemate.json';
-import { CONTRACT_ADDRESS } from '@/lib/wagmi';
-
-// Create a public client
-const client = createPublicClient({
-  chain: sepolia,
-  transport: http(),
-});
+import { publicClient, CONTRACT_ADDRESS } from '@/lib/wagmi/server';
 
 export async function GET(
   request: NextRequest,
@@ -22,7 +14,7 @@ export async function GET(
     }
 
     // Get match data from contract
-    const match = await client.readContract({
+    const match = await publicClient.readContract({
       address: CONTRACT_ADDRESS as `0x${string}`,
       abi: vibemateAbi,
       functionName: 'getMatch',

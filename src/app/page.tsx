@@ -327,15 +327,15 @@ export default function Home() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg" className="bg-white text-primary-700 hover:bg-gray-100 shadow-lg">
+              <Button asChild size="lg" className="bg-white text-primary-700 hover:bg-gray-100 shadow-lg font-semibold">
                 <Link href="/profile">
                   <span>Start Your Journey</span>
                   <Heart className="w-4 h-4 ml-2" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10">
+              <Button asChild size="lg" className="bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white hover:bg-white/20 hover:border-white/50 transition-all duration-300 font-semibold">
                 <Link href="/browse">
-                  Browse Profiles
+                  <span>Browse Profiles</span>
                 </Link>
               </Button>
             </div>

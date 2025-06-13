@@ -14,8 +14,8 @@ const robotoMono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VibeMate - Find Your Perfect Match on the Blockchain",
-  description: "A blockchain-based dating platform where users mint unique personality NFT profiles and earn rewards for successful matches.",
+  title: "VibeMate - Where Authentic Connections Begin",
+  description: "Create your unique personality profile, discover truly compatible matches, and get rewarded for meaningful connections. Dating reimagined.",
 };
 
 export default function RootLayout({
@@ -24,12 +24,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${inter.variable} ${robotoMono.variable} antialiased`}
       >
         <Providers>
-        {children}
+          {children}
         </Providers>
       </body>
     </html>
